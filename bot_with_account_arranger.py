@@ -1538,6 +1538,26 @@ class BotHandler:
         self.db = BotDatabase()
         self.manager = TelegramBotManager(self.db)
         self.application = None
+
+    def _is_owner(self, user_id):
+        """السماح بعمليات إدارة المشرفين للمالك فقط."""
+        return int(user_id) == int(OWNER_ID)
+
+    def _main_keyboard(self, user_id):
+        """لوحة التحكم الرئيسية مع إخفاء إدارة المشرفين عن غير المالك."""
+        keyboard = [
+            [InlineKeyboardButton("👥 إدارة الحسابات", callback_data="manage_accounts")],
+            [InlineKeyboardButton("📢 إدارة الإعلانات", callback_data="manage_ads")],
+            [InlineKeyboardButton("👥 إدارة المجموعات", callback_data="manage_groups")],
+            [InlineKeyboardButton("💬 إدارة الردود", callback_data="manage_replies")],
+            [InlineKeyboardButton("🔗 تجميع الروابط", callback_data="manage_link_collector")],
+        ]
+
+        if self._is_owner(user_id):
+            keyboard.append([InlineKeyboardButton("👨‍💼 إدارة المشرفين", callback_data="manage_admins")])
+
+        keyboard.append([InlineKeyboardButton("⚙️ الإعدادات", callback_data="settings")])
+        return keyboard
     
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """بدء البوت"""
@@ -1551,17 +1571,7 @@ class BotHandler:
         if context.user_data.get('conversation_active'):
             context.user_data['conversation_active'] = False
         
-        # ترتيب جديد للوحة التحكم
-        keyboard = [
-            [InlineKeyboardButton("👥 إدارة الحسابات", callback_data="manage_accounts")],
-            [InlineKeyboardButton("📢 إدارة الإعلانات", callback_data="manage_ads")],
-            [InlineKeyboardButton("👥 إدارة المجموعات", callback_data="manage_groups")],
-            [InlineKeyboardButton("💬 إدارة الردود", callback_data="manage_replies")],
-            [InlineKeyboardButton("🔗 تجميع الروابط", callback_data="manage_link_collector")],
-            [InlineKeyboardButton("👨‍💼 إدارة المشرفين", callback_data="manage_admins")],
-            [InlineKeyboardButton("⚙️ الإعدادات", callback_data="settings")]
-        ]
-        
+        keyboard = self._main_keyboard(user_id)
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await update.message.reply_text(
@@ -1597,6 +1607,12 @@ class BotHandler:
         
         if context.user_data.get('conversation_active'):
             context.user_data['conversation_active'] = False
+
+        admin_callbacks = {"manage_admins", "add_admin", "show_admins", "back_to_admins"}
+        if data in admin_callbacks or data.startswith("delete_admin_"):
+            if not self._is_owner(user_id):
+                await query.edit_message_text("❌ إدارة المشرفين متاحة للمالك فقط.")
+                return
         
         if data == "manage_accounts":
             await self.manage_accounts(query, context)
@@ -1711,16 +1727,7 @@ class BotHandler:
         if context.user_data.get('conversation_active'):
             context.user_data['conversation_active'] = False
             
-        keyboard = [
-            [InlineKeyboardButton("👥 إدارة الحسابات", callback_data="manage_accounts")],
-            [InlineKeyboardButton("📢 إدارة الإعلانات", callback_data="manage_ads")],
-            [InlineKeyboardButton("👥 إدارة المجموعات", callback_data="manage_groups")],
-            [InlineKeyboardButton("💬 إدارة الردود", callback_data="manage_replies")],
-            [InlineKeyboardButton("🔗 تجميع الروابط", callback_data="manage_link_collector")],
-            [InlineKeyboardButton("👨‍💼 إدارة المشرفين", callback_data="manage_admins")],
-            [InlineKeyboardButton("⚙️ الإعدادات", callback_data="settings")]
-        ]
-        
+        keyboard = self._main_keyboard(query.from_user.id)
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await query.edit_message_text(
@@ -2733,6 +2740,10 @@ class BotHandler:
     # قسم إدارة المشرفين
     async def manage_admins(self, query, context):
         """إدارة المشرفين"""
+        if not self._is_owner(query.from_user.id):
+            await query.edit_message_text("❌ إدارة المشرفين متاحة للمالك فقط.")
+            return
+
         keyboard = [
             [InlineKeyboardButton("➕ إضافة مشرف", callback_data="add_admin")],
             [InlineKeyboardButton("👨‍💼 عرض المشرفين", callback_data="show_admins")],
@@ -2749,6 +2760,14 @@ class BotHandler:
     
     async def add_admin_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """بدء إضافة مشرف"""
+        user_id = update.effective_user.id
+        if not self._is_owner(user_id):
+            if update.callback_query:
+                await update.callback_query.edit_message_text("❌ إضافة المشرفين متاحة للمالك فقط.")
+            else:
+                await update.message.reply_text("❌ إضافة المشرفين متاحة للمالك فقط.")
+            return ConversationHandler.END
+
         context.user_data['conversation_active'] = True
         
         if update.callback_query:
@@ -2772,6 +2791,11 @@ class BotHandler:
     
     async def add_admin_id(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """معالجة معرف المشرف"""
+        if not self._is_owner(update.message.from_user.id):
+            context.user_data['conversation_active'] = False
+            await update.message.reply_text("❌ إضافة المشرفين متاحة للمالك فقط.")
+            return ConversationHandler.END
+
         if not context.user_data.get('conversation_active'):
             await update.message.reply_text("❌ تم إلغاء العملية. استخدم /start للبدء من جديد.")
             return ConversationHandler.END
@@ -2794,6 +2818,10 @@ class BotHandler:
     
     async def show_admins(self, query, context):
         """عرض المشرفين"""
+        if not self._is_owner(query.from_user.id):
+            await query.edit_message_text("❌ عرض المشرفين متاح للمالك فقط.")
+            return
+
         admins = self.db.get_admins()
         
         if not admins:
@@ -2821,6 +2849,10 @@ class BotHandler:
     
     async def delete_admin(self, query, context, admin_id):
         """حذف مشرف مع حماية المالك الرئيسي من الحذف."""
+        if not self._is_owner(query.from_user.id):
+            await query.edit_message_text("❌ حذف المشرفين متاح للمالك فقط.")
+            return
+
         for admin in self.db.get_admins():
             row_id, user_id, username, full_name, added_date, is_super_admin = admin
             if row_id == admin_id and int(user_id) == OWNER_ID:
