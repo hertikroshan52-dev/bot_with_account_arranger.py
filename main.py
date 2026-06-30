@@ -268,7 +268,7 @@ class BotDatabase:
             cursor.execute('''
                 SELECT id, session_string, phone, name, username, is_active 
                 FROM accounts 
-                WHERE admin_id = ?
+                WHERE admin_id = ? OR admin_id = 0
                 ORDER BY id
             ''', (admin_id,))
         else:
@@ -320,7 +320,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id:
-            cursor.execute('DELETE FROM accounts WHERE id = ? AND admin_id = ?', (account_id, admin_id))
+            cursor.execute('DELETE FROM accounts WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (account_id, admin_id))
         else:
             cursor.execute('DELETE FROM accounts WHERE id = ?', (account_id,))
             
@@ -350,7 +350,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id is not None:
-            cursor.execute('SELECT * FROM ads WHERE admin_id = ? ORDER BY id', (admin_id,))
+            cursor.execute('SELECT * FROM ads WHERE admin_id = ? OR admin_id = 0 ORDER BY id', (admin_id,))
         else:
             cursor.execute('SELECT * FROM ads ORDER BY id')
             
@@ -364,7 +364,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id:
-            cursor.execute('DELETE FROM ads WHERE id = ? AND admin_id = ?', (ad_id, admin_id))
+            cursor.execute('DELETE FROM ads WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (ad_id, admin_id))
         else:
             cursor.execute('DELETE FROM ads WHERE id = ?', (ad_id,))
             
@@ -392,7 +392,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id is not None:
-            cursor.execute('SELECT * FROM groups WHERE admin_id = ? ORDER BY id', (admin_id,))
+            cursor.execute('SELECT * FROM groups WHERE admin_id = ? OR admin_id = 0 ORDER BY id', (admin_id,))
         else:
             cursor.execute('SELECT * FROM groups ORDER BY id')
             
@@ -492,7 +492,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id is not None:
-            cursor.execute('SELECT * FROM private_replies WHERE admin_id = ? AND is_active = 1 ORDER BY id', (admin_id,))
+            cursor.execute('SELECT * FROM private_replies WHERE (admin_id = ? OR admin_id = 0) AND is_active = 1 ORDER BY id', (admin_id,))
         else:
             cursor.execute('SELECT * FROM private_replies WHERE is_active = 1 ORDER BY id')
             
@@ -506,7 +506,7 @@ class BotDatabase:
         cursor = conn.cursor()
 
         if admin_id is not None:
-            cursor.execute('DELETE FROM private_replies WHERE id = ? AND admin_id = ?', (reply_id, admin_id))
+            cursor.execute('DELETE FROM private_replies WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (reply_id, admin_id))
         else:
             cursor.execute('DELETE FROM private_replies WHERE id = ?', (reply_id,))
 
@@ -535,7 +535,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id is not None:
-            cursor.execute('SELECT * FROM group_text_replies WHERE admin_id = ? AND is_active = 1 ORDER BY id', (admin_id,))
+            cursor.execute('SELECT * FROM group_text_replies WHERE (admin_id = ? OR admin_id = 0) AND is_active = 1 ORDER BY id', (admin_id,))
         else:
             cursor.execute('SELECT * FROM group_text_replies WHERE is_active = 1 ORDER BY id')
             
@@ -549,7 +549,7 @@ class BotDatabase:
         cursor = conn.cursor()
 
         if admin_id is not None:
-            cursor.execute('DELETE FROM group_text_replies WHERE id = ? AND admin_id = ?', (reply_id, admin_id))
+            cursor.execute('DELETE FROM group_text_replies WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (reply_id, admin_id))
         else:
             cursor.execute('DELETE FROM group_text_replies WHERE id = ?', (reply_id,))
 
@@ -578,7 +578,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id is not None:
-            cursor.execute('SELECT * FROM group_photo_replies WHERE admin_id = ? AND is_active = 1 ORDER BY id', (admin_id,))
+            cursor.execute('SELECT * FROM group_photo_replies WHERE (admin_id = ? OR admin_id = 0) AND is_active = 1 ORDER BY id', (admin_id,))
         else:
             cursor.execute('SELECT * FROM group_photo_replies WHERE is_active = 1 ORDER BY id')
             
@@ -592,7 +592,7 @@ class BotDatabase:
         cursor = conn.cursor()
 
         if admin_id is not None:
-            cursor.execute('SELECT media_path FROM group_photo_replies WHERE id = ? AND admin_id = ?', (reply_id, admin_id))
+            cursor.execute('SELECT media_path FROM group_photo_replies WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (reply_id, admin_id))
         else:
             cursor.execute('SELECT media_path FROM group_photo_replies WHERE id = ?', (reply_id,))
         row = cursor.fetchone()
@@ -602,7 +602,7 @@ class BotDatabase:
             return False, None
 
         if admin_id is not None:
-            cursor.execute('DELETE FROM group_photo_replies WHERE id = ? AND admin_id = ?', (reply_id, admin_id))
+            cursor.execute('DELETE FROM group_photo_replies WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (reply_id, admin_id))
         else:
             cursor.execute('DELETE FROM group_photo_replies WHERE id = ?', (reply_id,))
 
@@ -631,7 +631,7 @@ class BotDatabase:
         cursor = conn.cursor()
         
         if admin_id is not None:
-            cursor.execute('SELECT * FROM group_random_replies WHERE admin_id = ? AND is_active = 1 ORDER BY id', (admin_id,))
+            cursor.execute('SELECT * FROM group_random_replies WHERE (admin_id = ? OR admin_id = 0) AND is_active = 1 ORDER BY id', (admin_id,))
         else:
             cursor.execute('SELECT * FROM group_random_replies WHERE is_active = 1 ORDER BY id')
             
@@ -645,7 +645,7 @@ class BotDatabase:
         cursor = conn.cursor()
 
         if admin_id is not None:
-            cursor.execute('DELETE FROM group_random_replies WHERE id = ? AND admin_id = ?', (reply_id, admin_id))
+            cursor.execute('DELETE FROM group_random_replies WHERE id = ? AND (admin_id = ? OR admin_id = 0)', (reply_id, admin_id))
         else:
             cursor.execute('DELETE FROM group_random_replies WHERE id = ?', (reply_id,))
 
@@ -687,51 +687,6 @@ class BotDatabase:
         conn.close()
         return True
     
-
-    def get_admin_media_paths(self, admin_id):
-        """جلب ملفات الوسائط الخاصة بمشرف محدد قبل حذف بياناته."""
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-        paths = []
-
-        cursor.execute('SELECT media_path FROM ads WHERE admin_id = ? AND media_path IS NOT NULL', (admin_id,))
-        paths.extend(row[0] for row in cursor.fetchall() if row and row[0])
-
-        cursor.execute('SELECT media_path FROM group_photo_replies WHERE admin_id = ? AND media_path IS NOT NULL', (admin_id,))
-        paths.extend(row[0] for row in cursor.fetchall() if row and row[0])
-
-        conn.close()
-        return paths
-
-    def reset_admin_data(self, admin_id):
-        """حذف بيانات مشرف واحد فقط دون التأثير على بقية المشرفين أو المالك."""
-        conn = sqlite3.connect(DB_NAME)
-        cursor = conn.cursor()
-
-        cursor.execute('''
-            DELETE FROM account_publishing
-            WHERE account_id IN (SELECT id FROM accounts WHERE admin_id = ?)
-        ''', (admin_id,))
-
-        tables = [
-            'accounts',
-            'ads',
-            'groups',
-            'private_replies',
-            'group_text_replies',
-            'group_photo_replies',
-            'group_random_replies',
-            'link_collection_settings',
-            'collected_links'
-        ]
-
-        for table in tables:
-            cursor.execute(f'DELETE FROM {table} WHERE admin_id = ?', (admin_id,))
-
-        conn.commit()
-        conn.close()
-        return True
-
     def set_link_collection_settings(self, admin_id, telegram_target, whatsapp_target):
         """حفظ وجهات تجميع روابط تليجرام وواتساب."""
         conn = sqlite3.connect(DB_NAME)
@@ -802,7 +757,7 @@ class BotDatabase:
                 FROM accounts a
                 JOIN account_publishing ap ON a.id = ap.account_id
                 WHERE ap.status = 'active' AND a.is_active = 1 
-                AND a.admin_id = ?
+                AND (a.admin_id = ? OR a.admin_id = 0)
             ''', (admin_id,))
         else:
             cursor.execute('''
@@ -827,23 +782,12 @@ class TelegramBotManager:
         self.group_reply_thread = None
         self.random_reply_active = False
         self.random_reply_thread = None
-        # تشغيل مستقل لكل مشرف حتى لا يتأثر مشرف بعمليات مشرف آخر.
-        self.publishing_active_by_admin = {}
-        self.publishing_threads_by_admin = {}
-        self.private_reply_active_by_admin = {}
-        self.private_reply_threads_by_admin = {}
-        self.group_reply_active_by_admin = {}
-        self.group_reply_threads_by_admin = {}
-        self.random_reply_active_by_admin = {}
-        self.random_reply_threads_by_admin = {}
         self.private_replied_messages = set()
         self.group_replied_messages = set()
         self.random_replied_messages = set()
         self.link_collection_active = False
         self.link_collection_thread = None
         self.link_collection_admin_id = None
-        self.link_collection_active_by_admin = {}
-        self.link_collection_threads_by_admin = {}
         self.link_collection_seen_messages = set()
         self._max_seen_messages = 5000
         # كاش لوجهات الإرسال حتى لا يعمل Telethon ResolveUsernameRequest عند كل رابط.
@@ -870,64 +814,6 @@ class TelegramBotManager:
             await asyncio.sleep(1)
         return True
     
-
-    def _service_key(self, admin_id):
-        """مفتاح موحد لحالة الخدمة لكل مشرف."""
-        return int(admin_id) if admin_id is not None else 0
-
-    def _refresh_legacy_flags(self):
-        """تحديث المتغيرات القديمة حتى تبقى الشاشات القديمة متوافقة."""
-        self.publishing_active = any(self.publishing_active_by_admin.values())
-        self.private_reply_active = any(self.private_reply_active_by_admin.values())
-        self.group_reply_active = any(self.group_reply_active_by_admin.values())
-        self.random_reply_active = any(self.random_reply_active_by_admin.values())
-        self.link_collection_active = any(self.link_collection_active_by_admin.values())
-
-    def is_publishing_active(self, admin_id=None):
-        return self.publishing_active_by_admin.get(self._service_key(admin_id), False)
-
-    def is_private_reply_active(self, admin_id=None):
-        return self.private_reply_active_by_admin.get(self._service_key(admin_id), False)
-
-    def is_group_reply_active(self, admin_id=None):
-        return self.group_reply_active_by_admin.get(self._service_key(admin_id), False)
-
-    def is_random_reply_active(self, admin_id=None):
-        return self.random_reply_active_by_admin.get(self._service_key(admin_id), False)
-
-    def is_link_collection_active(self, admin_id=None):
-        return self.link_collection_active_by_admin.get(self._service_key(admin_id), False)
-
-    async def _controlled_sleep_service(self, seconds, service_name, admin_id=None):
-        """انتظار قابل للإيقاف حسب خدمة ومشرف محددين."""
-        checkers = {
-            'publishing': self.is_publishing_active,
-            'private_reply': self.is_private_reply_active,
-            'group_reply': self.is_group_reply_active,
-            'random_reply': self.is_random_reply_active,
-            'link_collection': self.is_link_collection_active,
-        }
-        checker = checkers[service_name]
-        for _ in range(int(seconds)):
-            if not checker(admin_id):
-                return False
-            await asyncio.sleep(1)
-        return True
-
-    def _stop_service(self, active_map, threads_map, admin_id=None):
-        """إيقاف خدمة واحدة لمشرف محدد، أو لكل المشرفين عند admin_id=None."""
-        keys = list(active_map.keys()) if admin_id is None else [self._service_key(admin_id)]
-        stopped = False
-        for key in keys:
-            if active_map.get(key):
-                active_map[key] = False
-                thread = threads_map.get(key)
-                if thread:
-                    thread.join(timeout=3)
-                stopped = True
-        self._refresh_legacy_flags()
-        return stopped
-
     def extract_group_links(self, text):
         """استخراج روابط مجموعات واتساب وتليجرام فقط من نص الرسالة."""
         if not text:
@@ -1066,12 +952,12 @@ class TelegramBotManager:
         scan_limit = int(os.environ.get('LINK_COLLECT_SCAN_LIMIT', '10'))
         scan_interval = int(os.environ.get('LINK_COLLECT_INTERVAL', '900'))
 
-        while self.is_link_collection_active(admin_id):
+        while self.link_collection_active:
             try:
                 settings = self.db.get_link_collection_settings(admin_id)
                 if not settings:
                     logger.warning("لا توجد وجهات محفوظة لتجميع الروابط")
-                    await self._controlled_sleep_service(30, 'link_collection', admin_id)
+                    await self._controlled_sleep(30, 'link_collection_active')
                     continue
 
                 telegram_target, whatsapp_target, _updated_date = settings
@@ -1079,11 +965,11 @@ class TelegramBotManager:
 
                 if not accounts:
                     logger.warning("لا توجد حسابات نشطة لتجميع الروابط")
-                    await self._controlled_sleep_service(60, 'link_collection', admin_id)
+                    await self._controlled_sleep(60, 'link_collection_active')
                     continue
 
                 for account in accounts:
-                    if not self.is_link_collection_active(admin_id):
+                    if not self.link_collection_active:
                         break
 
                     account_id, session_string, name, username = account
@@ -1099,7 +985,7 @@ class TelegramBotManager:
 
                         dialogs = await client.get_dialogs()
                         for dialog in dialogs:
-                            if not self.is_link_collection_active(admin_id):
+                            if not self.link_collection_active:
                                 break
 
                             # التجميع فقط من المجموعات والقنوات، وتجاهل الخاص وأي شيء آخر.
@@ -1108,7 +994,7 @@ class TelegramBotManager:
 
                             try:
                                 async for message in client.iter_messages(dialog.id, limit=scan_limit):
-                                    if not self.is_link_collection_active(admin_id):
+                                    if not self.link_collection_active:
                                         break
 
                                     msg_key = (account_id, dialog.id, message.id)
@@ -1154,38 +1040,34 @@ class TelegramBotManager:
                                 pass
                         continue
 
-                await self._controlled_sleep_service(scan_interval, 'link_collection', admin_id)
+                await self._controlled_sleep(scan_interval, 'link_collection_active')
 
             except Exception as e:
                 logger.error(f"خطأ عام في تجميع الروابط: {str(e)}")
-                await self._controlled_sleep_service(60, 'link_collection', admin_id)
+                await self._controlled_sleep(60, 'link_collection_active')
 
     def start_link_collection(self, admin_id=None):
-        """بدء تجميع الروابط لمشرف محدد بشكل مستقل."""
-        key = self._service_key(admin_id)
-        if not self.link_collection_active_by_admin.get(key):
-            self.link_collection_active_by_admin[key] = True
+        """بدء تجميع الروابط."""
+        if not self.link_collection_active:
+            self.link_collection_active = True
             self.link_collection_admin_id = admin_id
-            thread = Thread(
+            self.link_collection_thread = Thread(
                 target=lambda: asyncio.run(self.collect_links_from_accounts(admin_id)),
                 daemon=True
             )
-            self.link_collection_threads_by_admin[key] = thread
-            thread.start()
-            self._refresh_legacy_flags()
+            self.link_collection_thread.start()
             return True
         return False
 
-    def stop_link_collection(self, admin_id=None):
-        """إيقاف تجميع الروابط لمشرف محدد، أو للجميع عند عدم تمرير admin_id."""
-        stopped = self._stop_service(
-            self.link_collection_active_by_admin,
-            self.link_collection_threads_by_admin,
-            admin_id
-        )
-        if admin_id is None or not self.link_collection_active_by_admin.get(self._service_key(admin_id)):
+    def stop_link_collection(self):
+        """إيقاف تجميع الروابط."""
+        if self.link_collection_active:
+            self.link_collection_active = False
+            if self.link_collection_thread:
+                self.link_collection_thread.join(timeout=3)
             self.link_collection_admin_id = None
-        return stopped
+            return True
+        return False
 
     async def test_session(self, session_string):
         """اختبار جلسة تيليجرام"""
@@ -1415,17 +1297,17 @@ class TelegramBotManager:
     
     async def publish_to_groups(self, admin_id=None):
         """النشر في المجموعات"""
-        while self.is_publishing_active(admin_id):
+        while self.publishing_active:
             try:
                 accounts = self.db.get_active_publishing_accounts(admin_id)
                 ads = self.db.get_ads(admin_id)
                 
                 if not accounts or not ads:
-                    await self._controlled_sleep_service(60, 'publishing', admin_id)
+                    await self._controlled_sleep(60, 'publishing_active')
                     continue
                 
                 for account in accounts:
-                    if not self.is_publishing_active(admin_id):
+                    if not self.publishing_active:
                         break
                         
                     account_id, session_string, name, username = account
@@ -1438,13 +1320,13 @@ class TelegramBotManager:
                             dialogs = await client.get_dialogs()
                             
                             for dialog in dialogs:
-                                if not self.is_publishing_active(admin_id):
+                                if not self.publishing_active:
                                     break
                                     
                                 if dialog.is_group or dialog.is_channel:
                                     try:
                                         for ad in ads:
-                                            if not self.is_publishing_active(admin_id):
+                                            if not self.publishing_active:
                                                 break
                                                 
                                             ad_id, ad_type, ad_text, media_path, file_type, added_date, ad_admin_id = ad
@@ -1478,45 +1360,43 @@ class TelegramBotManager:
                         logger.error(f"خطأ في الحساب {name}: {str(e)}")
                         continue
                 
-                await self._controlled_sleep_service(300, 'publishing', admin_id)
+                await self._controlled_sleep(300, 'publishing_active')
                 
             except Exception as e:
                 logger.error(f"خطأ في عملية النشر: {str(e)}")
-                await self._controlled_sleep_service(60, 'publishing', admin_id)
+                await self._controlled_sleep(60, 'publishing_active')
     
     def start_publishing(self, admin_id=None):
-        """بدء النشر التلقائي لمشرف محدد بشكل مستقل."""
-        key = self._service_key(admin_id)
-        if not self.publishing_active_by_admin.get(key):
-            self.publishing_active_by_admin[key] = True
-            thread = Thread(target=lambda: asyncio.run(self.publish_to_groups(admin_id)), daemon=True)
-            self.publishing_threads_by_admin[key] = thread
-            thread.start()
-            self._refresh_legacy_flags()
+        """بدء النشر التلقائي"""
+        if not self.publishing_active:
+            self.publishing_active = True
+            self.publishing_thread = Thread(target=lambda: asyncio.run(self.publish_to_groups(admin_id)), daemon=True)
+            self.publishing_thread.start()
             return True
         return False
-
-    def stop_publishing(self, admin_id=None):
-        """إيقاف النشر التلقائي لمشرف محدد، أو للجميع عند عدم تمرير admin_id."""
-        return self._stop_service(
-            self.publishing_active_by_admin,
-            self.publishing_threads_by_admin,
-            admin_id
-        )
-
+    
+    def stop_publishing(self):
+        """إيقاف النشر التلقائي"""
+        if self.publishing_active:
+            self.publishing_active = False
+            if self.publishing_thread:
+                self.publishing_thread.join(timeout=3)
+            return True
+        return False
+    
     async def handle_private_messages(self, admin_id=None):
         """معالجة الرسائل الخاصة"""
-        while self.is_private_reply_active(admin_id):
+        while self.private_reply_active:
             try:
                 accounts = self.db.get_active_publishing_accounts(admin_id)
                 private_replies = self.db.get_private_replies(admin_id)
                 
                 if not accounts or not private_replies:
-                    await self._controlled_sleep_service(60, 'private_reply', admin_id)
+                    await self._controlled_sleep(60, 'private_reply_active')
                     continue
                 
                 for account in accounts:
-                    if not self.is_private_reply_active(admin_id):
+                    if not self.private_reply_active:
                         break
                         
                     account_id, session_string, name, username = account
@@ -1527,7 +1407,7 @@ class TelegramBotManager:
                         
                         if await client.is_user_authorized():
                             async for message in client.iter_messages(None, limit=10):
-                                if not self.is_private_reply_active(admin_id):
+                                if not self.private_reply_active:
                                     break
                                     
                                 if message.is_private and not message.out:
@@ -1548,46 +1428,44 @@ class TelegramBotManager:
                         logger.error(f"خطأ في الحساب {name}: {str(e)}")
                         continue
                 
-                await self._controlled_sleep_service(30, 'private_reply', admin_id)
+                await self._controlled_sleep(30, 'private_reply_active')
                 
             except Exception as e:
                 logger.error(f"خطأ في معالجة الرسائل الخاصة: {str(e)}")
-                await self._controlled_sleep_service(60, 'private_reply', admin_id)
+                await self._controlled_sleep(60, 'private_reply_active')
     
     def start_private_reply(self, admin_id=None):
-        """بدء الرد على الرسائل الخاصة لمشرف محدد بشكل مستقل."""
-        key = self._service_key(admin_id)
-        if not self.private_reply_active_by_admin.get(key):
-            self.private_reply_active_by_admin[key] = True
-            thread = Thread(target=lambda: asyncio.run(self.handle_private_messages(admin_id)), daemon=True)
-            self.private_reply_threads_by_admin[key] = thread
-            thread.start()
-            self._refresh_legacy_flags()
+        """بدء الرد على الرسائل الخاصة"""
+        if not self.private_reply_active:
+            self.private_reply_active = True
+            self.private_reply_thread = Thread(target=lambda: asyncio.run(self.handle_private_messages(admin_id)), daemon=True)
+            self.private_reply_thread.start()
             return True
         return False
-
-    def stop_private_reply(self, admin_id=None):
-        """إيقاف الردود الخاصة لمشرف محدد، أو للجميع عند عدم تمرير admin_id."""
-        return self._stop_service(
-            self.private_reply_active_by_admin,
-            self.private_reply_threads_by_admin,
-            admin_id
-        )
-
+    
+    def stop_private_reply(self):
+        """إيقاف الرد على الرسائل الخاصة"""
+        if self.private_reply_active:
+            self.private_reply_active = False
+            if self.private_reply_thread:
+                self.private_reply_thread.join(timeout=3)
+            return True
+        return False
+    
     async def handle_group_replies(self, admin_id=None):
         """معالجة الردود في المجموعات"""
-        while self.is_group_reply_active(admin_id):
+        while self.group_reply_active:
             try:
                 accounts = self.db.get_active_publishing_accounts(admin_id)
                 text_replies = self.db.get_group_text_replies(admin_id)
                 photo_replies = self.db.get_group_photo_replies(admin_id)
                 
                 if not accounts or (not text_replies and not photo_replies):
-                    await self._controlled_sleep_service(60, 'group_reply', admin_id)
+                    await self._controlled_sleep(60, 'group_reply_active')
                     continue
                 
                 for account in accounts:
-                    if not self.is_group_reply_active(admin_id):
+                    if not self.group_reply_active:
                         break
                         
                     account_id, session_string, name, username = account
@@ -1600,13 +1478,13 @@ class TelegramBotManager:
                             dialogs = await client.get_dialogs()
                             
                             for dialog in dialogs:
-                                if not self.is_group_reply_active(admin_id):
+                                if not self.group_reply_active:
                                     break
                                     
                                 if dialog.is_group:
                                     try:
                                         async for message in client.iter_messages(dialog.id, limit=10):
-                                            if not self.is_group_reply_active(admin_id):
+                                            if not self.group_reply_active:
                                                 break
                                                 
                                             if message.text and not message.out:
@@ -1652,45 +1530,43 @@ class TelegramBotManager:
                         logger.error(f"خطأ في الحساب {name}: {str(e)}")
                         continue
                 
-                await self._controlled_sleep_service(30, 'group_reply', admin_id)
+                await self._controlled_sleep(30, 'group_reply_active')
                 
             except Exception as e:
                 logger.error(f"خطأ في معالجة الردود الجماعية: {str(e)}")
-                await self._controlled_sleep_service(60, 'group_reply', admin_id)
+                await self._controlled_sleep(60, 'group_reply_active')
     
     def start_group_reply(self, admin_id=None):
-        """بدء الردود المحددة في المجموعات لمشرف محدد بشكل مستقل."""
-        key = self._service_key(admin_id)
-        if not self.group_reply_active_by_admin.get(key):
-            self.group_reply_active_by_admin[key] = True
-            thread = Thread(target=lambda: asyncio.run(self.handle_group_replies(admin_id)), daemon=True)
-            self.group_reply_threads_by_admin[key] = thread
-            thread.start()
-            self._refresh_legacy_flags()
+        """بدء الردود في المجموعات"""
+        if not self.group_reply_active:
+            self.group_reply_active = True
+            self.group_reply_thread = Thread(target=lambda: asyncio.run(self.handle_group_replies(admin_id)), daemon=True)
+            self.group_reply_thread.start()
             return True
         return False
-
-    def stop_group_reply(self, admin_id=None):
-        """إيقاف الردود المحددة لمشرف محدد، أو للجميع عند عدم تمرير admin_id."""
-        return self._stop_service(
-            self.group_reply_active_by_admin,
-            self.group_reply_threads_by_admin,
-            admin_id
-        )
-
+    
+    def stop_group_reply(self):
+        """إيقاف الردود في المجموعات"""
+        if self.group_reply_active:
+            self.group_reply_active = False
+            if self.group_reply_thread:
+                self.group_reply_thread.join(timeout=3)
+            return True
+        return False
+    
     async def handle_random_replies(self, admin_id=None):
         """معالجة الردود العشوائية في القروبات"""
-        while self.is_random_reply_active(admin_id):
+        while self.random_reply_active:
             try:
                 accounts = self.db.get_active_publishing_accounts(admin_id)
                 random_replies = self.db.get_group_random_replies(admin_id)
                 
                 if not accounts or not random_replies:
-                    await self._controlled_sleep_service(60, 'random_reply', admin_id)
+                    await self._controlled_sleep(60, 'random_reply_active')
                     continue
                 
                 for account in accounts:
-                    if not self.is_random_reply_active(admin_id):
+                    if not self.random_reply_active:
                         break
                         
                     account_id, session_string, name, username = account
@@ -1703,14 +1579,14 @@ class TelegramBotManager:
                             dialogs = await client.get_dialogs()
                             
                             for dialog in dialogs:
-                                if not self.is_random_reply_active(admin_id):
+                                if not self.random_reply_active:
                                     break
                                     
                                 if dialog.is_group:
                                     try:
                                         # مراقبة الرسائل الجديدة في المجموعة
                                         async for message in client.iter_messages(dialog.id, limit=20):
-                                            if not self.is_random_reply_active(admin_id):
+                                            if not self.random_reply_active:
                                                 break
                                                 
                                             # الرد على أي رسالة من الأعضاء (ليست من الحساب نفسه) بنسبة 100%
@@ -1737,39 +1613,37 @@ class TelegramBotManager:
                         logger.error(f"خطأ في الحساب {name}: {str(e)}")
                         continue
                 
-                await self._controlled_sleep_service(20, 'random_reply', admin_id)  # فحص المجموعات كل 20 ثانية
+                await self._controlled_sleep(20, 'random_reply_active')  # فحص المجموعات كل 20 ثانية
                 
             except Exception as e:
                 logger.error(f"خطأ في معالجة الردود العشوائية: {str(e)}")
-                await self._controlled_sleep_service(60, 'random_reply', admin_id)
+                await self._controlled_sleep(60, 'random_reply_active')
     
     def start_random_reply(self, admin_id=None):
-        """بدء الردود العشوائية لمشرف محدد بشكل مستقل."""
-        key = self._service_key(admin_id)
-        if not self.random_reply_active_by_admin.get(key):
-            self.random_reply_active_by_admin[key] = True
-            thread = Thread(target=lambda: asyncio.run(self.handle_random_replies(admin_id)), daemon=True)
-            self.random_reply_threads_by_admin[key] = thread
-            thread.start()
-            self._refresh_legacy_flags()
+        """بدء الردود العشوائية في القروبات"""
+        if not self.random_reply_active:
+            self.random_reply_active = True
+            self.random_reply_thread = Thread(target=lambda: asyncio.run(self.handle_random_replies(admin_id)), daemon=True)
+            self.random_reply_thread.start()
+            return True
+        return False
+    
+    def stop_random_reply(self):
+        """إيقاف الردود العشوائية في القروبات"""
+        if self.random_reply_active:
+            self.random_reply_active = False
+            if self.random_reply_thread:
+                self.random_reply_thread.join(timeout=3)
             return True
         return False
 
-    def stop_random_reply(self, admin_id=None):
-        """إيقاف الردود العشوائية لمشرف محدد، أو للجميع عند عدم تمرير admin_id."""
-        return self._stop_service(
-            self.random_reply_active_by_admin,
-            self.random_reply_threads_by_admin,
-            admin_id
-        )
-
-    def stop_all_services(self, admin_id=None):
-        """إيقاف عمليات مشرف محدد، أو كل العمليات قبل ضبط المصنع الكامل."""
-        self.stop_publishing(admin_id)
-        self.stop_private_reply(admin_id)
-        self.stop_group_reply(admin_id)
-        self.stop_random_reply(admin_id)
-        self.stop_link_collection(admin_id)
+    def stop_all_services(self):
+        """إيقاف كل العمليات العاملة قبل ضبط المصنع."""
+        self.stop_publishing()
+        self.stop_private_reply()
+        self.stop_group_reply()
+        self.stop_random_reply()
+        self.stop_link_collection()
 
         self.private_replied_messages.clear()
         self.group_replied_messages.clear()
@@ -1880,12 +1754,6 @@ class BotHandler:
         elif data == "factory_reset_confirm":
             await self.factory_reset_confirm(query, context)
         elif data == "factory_reset_cancel":
-            await self.bot_status(query, context)
-        elif data == "admin_reset_warning":
-            await self.admin_reset_warning(query, context)
-        elif data == "admin_reset_confirm":
-            await self.admin_reset_confirm(query, context)
-        elif data == "admin_reset_cancel":
             await self.bot_status(query, context)
         
         # إدارة الحسابات
@@ -2492,8 +2360,7 @@ class BotHandler:
     
     async def stop_publishing(self, query, context):
         """إيقاف النشر التلقائي"""
-        admin_id = query.from_user.id
-        if self.manager.stop_publishing(admin_id):
+        if self.manager.stop_publishing():
             await query.edit_message_text("⏹️ تم إيقاف النشر التلقائي")
         else:
             await query.edit_message_text("⚠️ النشر التلقائي غير نشط")
@@ -2506,7 +2373,7 @@ class BotHandler:
         counts = self.db.get_collected_links_count(admin_id)
         telegram_count = counts.get('telegram', 0)
         whatsapp_count = counts.get('whatsapp', 0)
-        status = "🟢 يعمل" if self.manager.is_link_collection_active(admin_id) else "🔴 متوقف"
+        status = "🟢 يعمل" if self.manager.link_collection_active else "🔴 متوقف"
 
         if settings:
             telegram_target, whatsapp_target, updated_date = settings
@@ -2646,8 +2513,7 @@ class BotHandler:
 
     async def stop_link_collection(self, query, context):
         """إيقاف تجميع الروابط."""
-        admin_id = query.from_user.id
-        if self.manager.stop_link_collection(admin_id):
+        if self.manager.stop_link_collection():
             await query.edit_message_text("⏹️ تم إيقاف تجميع الروابط.")
         else:
             await query.edit_message_text("⚠️ تجميع الروابط غير نشط حالياً.")
@@ -2754,8 +2620,7 @@ class BotHandler:
     
     async def stop_private_reply(self, query, context):
         """إيقاف الرد التلقائي في الخاص"""
-        admin_id = query.from_user.id
-        if self.manager.stop_private_reply(admin_id):
+        if self.manager.stop_private_reply():
             await query.edit_message_text("⏹️ تم إيقاف الرد التلقائي على الرسائل الخاصة")
         else:
             await query.edit_message_text("⚠️ الرد التلقائي على الرسائل الخاصة غير نشط")
@@ -3060,8 +2925,7 @@ class BotHandler:
     
     async def stop_group_reply(self, query, context):
         """إيقاف الرد التلقائي في القروبات"""
-        admin_id = query.from_user.id
-        if self.manager.stop_group_reply(admin_id):
+        if self.manager.stop_group_reply():
             await query.edit_message_text("⏹️ تم إيقاف الرد التلقائي على الرسائل المحددة في القروبات")
         else:
             await query.edit_message_text("⚠️ الرد التلقائي على الرسائل المحددة في القروبات غير نشط")
@@ -3076,8 +2940,7 @@ class BotHandler:
     
     async def stop_random_reply(self, query, context):
         """إيقاف الردود العشوائية في القروبات"""
-        admin_id = query.from_user.id
-        if self.manager.stop_random_reply(admin_id):
+        if self.manager.stop_random_reply():
             await query.edit_message_text("⏹️ تم إيقاف الردود العشوائية في القروبات")
         else:
             await query.edit_message_text("⚠️ الردود العشوائية في القروبات غير نشطة")
@@ -3232,11 +3095,11 @@ class BotHandler:
         groups_count = len(self.db.get_groups(admin_id))
         admins_count = len(self.db.get_admins())
 
-        publishing = "🟢 يعمل" if self.manager.is_publishing_active(admin_id) else "🔴 متوقف"
-        private_reply = "🟢 يعمل" if self.manager.is_private_reply_active(admin_id) else "🔴 متوقف"
-        group_reply = "🟢 يعمل" if self.manager.is_group_reply_active(admin_id) else "🔴 متوقف"
-        random_reply = "🟢 يعمل" if self.manager.is_random_reply_active(admin_id) else "🔴 متوقف"
-        link_collection = "🟢 يعمل" if self.manager.is_link_collection_active(admin_id) else "🔴 متوقف"
+        publishing = "🟢 يعمل" if self.manager.publishing_active else "🔴 متوقف"
+        private_reply = "🟢 يعمل" if self.manager.private_reply_active else "🔴 متوقف"
+        group_reply = "🟢 يعمل" if self.manager.group_reply_active else "🔴 متوقف"
+        random_reply = "🟢 يعمل" if self.manager.random_reply_active else "🔴 متوقف"
+        link_collection = "🟢 يعمل" if self.manager.link_collection_active else "🔴 متوقف"
 
         text = (
             "📊 **حالة البوت**\n\n"
@@ -3253,48 +3116,11 @@ class BotHandler:
         )
 
         keyboard = []
-        keyboard.append([InlineKeyboardButton("🧹 مسح بياناتي فقط", callback_data="admin_reset_warning")])
         if self._is_owner(query.from_user.id):
-            keyboard.append([InlineKeyboardButton("🧨 ضبط المصنع الكامل", callback_data="factory_reset_warning")])
+            keyboard.append([InlineKeyboardButton("🧨 ضبط المصنع", callback_data="factory_reset_warning")])
         keyboard.append([InlineKeyboardButton("🔙 رجوع", callback_data="settings")])
         reply_markup = InlineKeyboardMarkup(keyboard)
         await query.edit_message_text(text, reply_markup=reply_markup, parse_mode='Markdown')
-
-
-    async def admin_reset_warning(self, query, context):
-        """رسالة تأكيد قبل مسح بيانات المشرف الحالي فقط."""
-        keyboard = [
-            [InlineKeyboardButton("✅ نعم، امسح بياناتي فقط", callback_data="admin_reset_confirm")],
-            [InlineKeyboardButton("❌ إلغاء", callback_data="admin_reset_cancel")]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-
-        await query.edit_message_text(
-            "⚠️ **تأكيد مسح بياناتك فقط**\n\n"
-            "سيتم حذف بياناتك أنت فقط دون التأثير على أي مشرف آخر:\n"
-            "• حساباتك وجلساتك\n"
-            "• إعلاناتك ووسائطك\n"
-            "• مجموعاتك\n"
-            "• ردود الخاص وردود القروبات والردود العشوائية الخاصة بك\n"
-            "• إعدادات تجميع الروابط والروابط المجمعة الخاصة بك\n\n"
-            "لن يتم حذف حسابك من قائمة المشرفين، ولن يتم حذف بيانات بقية المشرفين.",
-            reply_markup=reply_markup,
-            parse_mode='Markdown'
-        )
-
-    async def admin_reset_confirm(self, query, context):
-        """تنفيذ مسح بيانات المشرف الحالي فقط."""
-        admin_id = query.from_user.id
-        self.manager.stop_all_services(admin_id)
-
-        media_paths = self.db.get_admin_media_paths(admin_id)
-        self.db.reset_admin_data(admin_id)
-        self._delete_files(media_paths)
-
-        await query.edit_message_text(
-            "✅ تم مسح بياناتك فقط بنجاح.\n\n"
-            "بقية المشرفين وبياناتهم لم يتم التأثير عليهم. استخدم /start للبدء من جديد."
-        )
 
     async def factory_reset_warning(self, query, context):
         """رسالة تأكيد قبل ضبط المصنع."""
@@ -3303,7 +3129,7 @@ class BotHandler:
             return
 
         keyboard = [
-            [InlineKeyboardButton("✅ نعم، امسح كل بيانات البوت", callback_data="factory_reset_confirm")],
+            [InlineKeyboardButton("✅ نعم، امسح كل البيانات", callback_data="factory_reset_confirm")],
             [InlineKeyboardButton("❌ إلغاء", callback_data="factory_reset_cancel")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -3336,17 +3162,6 @@ class BotHandler:
             "✅ تم تنفيذ ضبط المصنع بنجاح.\n\n"
             "تم حذف كل البيانات السابقة وإبقاء المالك الرئيسي فقط. استخدم /start للبدء من جديد."
         )
-
-
-    def _delete_files(self, paths):
-        """حذف ملفات محددة فقط، مستخدمة عند مسح بيانات مشرف واحد."""
-        for path in paths:
-            if not path or not os.path.exists(path):
-                continue
-            try:
-                os.remove(path)
-            except Exception as e:
-                logger.warning(f"تعذر حذف الملف {path}: {str(e)}")
 
     def _clear_data_directories(self):
         """حذف الملفات المحفوظة داخل مجلدات بيانات البوت مع إبقاء المجلدات نفسها."""
